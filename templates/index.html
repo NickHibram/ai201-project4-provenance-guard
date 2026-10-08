@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A local, uncertainty-aware creative-text attribution prototype.">
+  <title>Provenance Guard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</head>
+<body>
+  <div class="site-wrap">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Provenance Guard home">
+        <span class="brand-mark" aria-hidden="true">PG</span>
+        <span>Provenance Guard</span>
+      </a>
+      <nav aria-label="Page sections">
+        <a href="#analyze">Analyze</a>
+        <a href="#audit">Audit log</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="page-title">
+        <div class="hero-copy">
+          <p class="eyebrow">LOCAL ATTRIBUTION PROTOTYPE <span class="eyebrow-rule"></span> ENGLISH CREATIVE TEXT</p>
+          <h1 id="page-title">A clearer view of <em>uncertain</em> authorship signals.</h1>
+          <p class="hero-lede">Submit a passage to see a Groq assessment and four transparent writing measurements combined into one AI-evidence index. Every result can be appealed.</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#analyze">Analyze a passage <span aria-hidden="true">↗</span></a>
+            <span class="hero-note">An index, never proof of who wrote it.</span>
+          </div>
+        </div>
+        <div class="hero-card" aria-label="How the assessment works">
+          <div class="hero-card-top"><span class="card-kicker">HOW IT WORKS</span><span class="card-number">01 / 03</span></div>
+          <div class="signal-row"><span class="signal-icon">01</span><div><strong>Contextual assessment</strong><small>Groq examines the writing as a whole.</small></div></div>
+          <div class="signal-row"><span class="signal-icon">02</span><div><strong>Stylometric signal</strong><small>Four fixed, understandable measurements.</small></div></div>
+          <div class="signal-row"><span class="signal-icon">03</span><div><strong>Decision &amp; audit</strong><small>Fixed rules, a clear label, and a saved record.</small></div></div>
+          <p class="hero-card-foot">If information or a signal is missing, the system abstains.</p>
+        </div>
+      </section>
+
+      <section class="workspace" id="analyze" aria-labelledby="analyze-title">
+        <div class="section-heading"><div><p class="eyebrow">01 — ANALYZE</p><h2 id="analyze-title">Submit your text</h2></div><p>For a full two-signal assessment, use at least 50 words across three analysis sentences.</p></div>
+        <div class="work-grid">
+          <form id="submission-form" class="panel form-panel">
+            <label for="creator-id">Creator ID <span class="required">*</span></label>
+            <input id="creator-id" name="creator_id" type="text" maxlength="100" autocomplete="off" placeholder="e.g. creator-001" required>
+            <p class="field-note">A local identifier for the submission and any appeal. It is not authentication.</p>
+
+            <div class="label-line"><label for="creative-text">Creative text <span class="required">*</span></label><span id="char-count">0 / 20,000</span></div>
+            <textarea id="creative-text" name="text" maxlength="20000" rows="11" placeholder="Paste or write an English-language passage here..." required></textarea>
+            <p class="field-note">Eligible text is sent to Groq. Short text remains uncertain without a provider call.</p>
+            <button id="analyze-button" class="button button-primary submit-button" type="submit">Analyze text <span aria-hidden="true">→</span></button>
+            <p id="submit-status" class="form-status" role="status" aria-live="polite"></p>
+          </form>
+
+          <aside class="panel guidance-panel">
+            <p class="eyebrow">READ THE RESULT</p>
+            <h3>What the index means</h3>
+            <p>The reported <strong>confidence</strong> is a directional AI-evidence index from 0 to 1. It is <strong>not</strong> the probability that AI wrote the passage.</p>
+            <div class="scale"><span>0.00</span><span>0.50</span><span>1.00</span></div>
+            <div class="scale-track"><span class="scale-human"></span><span class="scale-uncertain"></span><span class="scale-ai"></span></div>
+            <div class="scale-labels"><span>Human-like</span><span>Uncertain</span><span>AI-like</span></div>
+            <hr>
+            <p class="guidance-small">The two signals can disagree. A polished human passage, a repetitive poem, or edited AI text can receive a misleading result. A label never verifies authorship.</p>
+          </aside>
+        </div>
+      </section>
+
+      <section id="result-panel" class="result-section" aria-labelledby="result-title" hidden>
+        <div class="section-heading"><div><p class="eyebrow">02 — ASSESSMENT</p><h2 id="result-title">Your result</h2></div></div>
+        <div class="panel result-panel">
+          <div class="result-top"><span id="result-attribution" class="attribution-badge"></span><span id="result-analysis-status" class="muted"></span></div>
+          <p id="result-label" class="result-label"></p>
+          <div class="index-row"><div><span class="metric-label">AI-EVIDENCE INDEX</span><strong id="result-index" class="index-value"></strong><small id="result-index-note">Directional index, not authorship probability</small></div><div class="index-visual" aria-hidden="true"><span id="result-marker"></span></div></div>
+          <div class="result-details"><div><span>Groq signal</span><strong id="result-llm"></strong></div><div><span>Stylometric signal</span><strong id="result-style"></strong></div><div><span>Content ID</span><code id="result-content-id"></code></div></div>
+          <p id="result-reasons" class="result-reasons"></p>
+          <section id="stylometry-breakdown" class="style-breakdown" aria-labelledby="style-breakdown-title">
+            <div class="style-heading"><h3 id="style-breakdown-title">Stylometric score breakdown</h3><span>Four equal components</span></div>
+            <p class="style-intro">Higher component scores indicate more AI-like regularity in this fixed signal. These are evidence scores, not authorship probabilities.</p>
+            <div class="style-feature"><div><strong>Sentence-length variation</strong><small id="style-sentence-raw"></small></div><strong id="style-sentence-score"></strong></div>
+            <div class="style-feature"><div><strong>Vocabulary diversity</strong><small id="style-vocabulary-raw"></small></div><strong id="style-vocabulary-score"></strong></div>
+            <div class="style-feature"><div><strong>Punctuation usage</strong><small id="style-punctuation-raw"></small></div><strong id="style-punctuation-score"></strong></div>
+            <div class="style-feature"><div><strong>Function-word frequency</strong><small id="style-function-raw"></small></div><strong id="style-function-score"></strong></div>
+            <p class="style-rule">CV = population standard deviation ÷ mean. Sentence, punctuation, and function-word components use 0.90 − 0.80 × clip((CV − 0.10) ÷ 0.70). Vocabulary uses 0.90 − 0.80 × clip((50-word TTR − 0.45) ÷ 0.40). Clip limits its input to 0–1.</p>
+            <p class="style-rule">Each 50-word TTR is unique words ÷ 50, averaged across consecutive full blocks. Any incomplete final block is excluded. Punctuation counts only , ; : — – ( ) [ ] { }.</p>
+            <div class="style-total"><span>Stylometric score = (four components) ÷ 4</span><strong id="style-average"></strong></div>
+            <p id="combined-math" class="style-combined"></p>
+            <p class="style-rounding">Values shown to six decimal places; classification uses unrounded scores.</p>
+          </section>
+        </div>
+      </section>
+
+      <section id="appeal-panel" class="appeal-section" aria-labelledby="appeal-title" hidden>
+        <div class="section-heading"><div><p class="eyebrow">03 — CONTEST</p><h2 id="appeal-title">Request a review</h2></div><p>An appeal records your explanation and sets the workflow to under review. It does not rerun the detectors.</p></div>
+        <form id="appeal-form" class="panel appeal-form">
+          <label for="appeal-reasoning">Why are you appealing this assessment?</label>
+          <textarea id="appeal-reasoning" maxlength="2000" rows="4" placeholder="Describe your writing or editing process..." required></textarea>
+          <div class="appeal-actions"><span>All three classifications can be appealed.</span><button id="appeal-button" class="button button-secondary" type="submit">Submit appeal <span aria-hidden="true">→</span></button></div>
+          <p id="appeal-status" class="form-status" role="status" aria-live="polite"></p>
+        </form>
+        <div id="appeal-confirmation" class="panel appeal-confirmation" role="status" aria-live="polite" hidden>
+          <h3>Appeal recorded</h3>
+          <p id="appeal-confirmation-notice"></p>
+          <p>Your original assessment remains visible above. This local prototype records the appeal but has no automatic reviewer decision.</p>
+          <p class="appeal-reference">Appeal ID: <code id="appeal-confirmation-id"></code></p>
+        </div>
+      </section>
+
+      <section class="audit-section" id="audit" aria-labelledby="audit-title">
+        <div class="section-heading"><div><p class="eyebrow">AUDIT TRAIL</p><h2 id="audit-title">Recent events</h2></div><button id="refresh-log" class="text-button" type="button">Refresh log ↻</button></div>
+        <div class="panel audit-panel"><p id="audit-status" class="muted" role="status"></p><ol id="audit-list" class="audit-list"></ol></div>
+        <p class="audit-note">This local log is visible without authentication for course-project inspection. Keep the app on localhost.</p>
+      </section>
+    </main>
+
+    <footer><span>PROVENANCE GUARD / LOCAL PROTOTYPE</span><span>Attribution evidence is not proof.</span></footer>
+  </div>
+  <dialog id="appeal-popup" class="appeal-popup" aria-labelledby="appeal-popup-title">
+    <p class="eyebrow">APPEAL SAVED</p>
+    <h2 id="appeal-popup-title">Appeal recorded</h2>
+    <p id="appeal-popup-notice"></p>
+    <p>The original assessment stays in place. This prototype does not automatically resolve appeals.</p>
+    <p class="appeal-reference">Appeal ID: <code id="appeal-popup-id"></code></p>
+    <button id="appeal-popup-close" class="button button-primary" type="button">Close</button>
+  </dialog>
+  <dialog id="rate-limit-popup" class="appeal-popup" aria-labelledby="rate-limit-popup-title">
+    <p class="eyebrow">SUBMISSION LIMIT</p>
+    <h2 id="rate-limit-popup-title">Too many submissions</h2>
+    <p id="rate-limit-popup-message"></p>
+    <button id="rate-limit-popup-close" class="button button-primary" type="button">Close</button>
+  </dialog>
+</body>
+</html>
